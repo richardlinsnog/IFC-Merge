@@ -13,7 +13,8 @@ executável de clique único.
   `MergeProjects`), que converte automaticamente as unidades de comprimento dos
   modelos adicionais para a unidade do modelo base.
 - Converter automaticamente modelos com **schema diferente** (ex.: `IFC2X3` +
-  `IFC4`) para o schema do modelo base antes de mesclar (recipe `Migrate`).
+  `IFC4`) para o schema **mais novo** presente entre eles antes de mesclar
+  (recipe `Migrate`), evitando downgrade com perda de dados.
 
 ## Requisitos
 

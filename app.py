@@ -7,6 +7,10 @@ from tkinter import filedialog, messagebox
 import ifcopenshell
 from ifcpatch.recipes import MergeProjects, Migrate
 
+# Preferimos sempre "subir" de schema (upgrade), nunca descer: downgrade
+# (ex.: IFC4 -> IFC2X3) é lossy e falha em classes só existentes no mais novo.
+_SCHEMA_RANK = {"IFC2X3": 0, "IFC4": 1, "IFC4X3": 2}
+
 
 class IFCMergerApp:
     def __init__(self, root: tk.Tk) -> None:
@@ -84,24 +88,28 @@ class IFCMergerApp:
         out_path = os.path.join(self.export_dir, "merged.ifc")
 
         try:
-            base = ifcopenshell.open(self.files[0])
-            target_schema = base.schema
+            models = [ifcopenshell.open(path) for path in self.files]
+            target_schema = max(
+                (m.schema for m in models),
+                key=lambda s: _SCHEMA_RANK.get(s, 0),
+            )
 
-            # Converte os demais modelos para o schema do modelo base, pois
-            # o merge não aceita misturar schemas (ex.: IFC2X3 + IFC4).
-            others = []
-            for path in self.files[1:]:
-                try:
-                    model = ifcopenshell.open(path)
-                    if model.schema != target_schema:
+            # Converte para o schema mais novo presente entre os arquivos.
+            def prepare(model, path):
+                if model.schema != target_schema:
+                    try:
                         migrator = Migrate.Patcher(file=model, schema=target_schema)
                         migrator.patch()
-                        model = migrator.get_output()
-                    others.append(model)
-                except Exception as exc:
-                    raise RuntimeError(
-                        f"Falha ao preparar {os.path.basename(path)}: {exc}"
-                    ) from exc
+                        return migrator.get_output()
+                    except Exception as exc:
+                        raise RuntimeError(
+                            f"Falha ao converter {os.path.basename(path)} "
+                            f"para {target_schema}:\n{exc}"
+                        ) from exc
+                return model
+
+            base = prepare(models[0], self.files[0])
+            others = [prepare(m, p) for m, p in zip(models[1:], self.files[1:])]
 
             # Chamamos o Patcher diretamente: ifcpatch.execute desempacota
             # "arguments" de forma quebrada para MergeProjects com 3+ arquivos.
