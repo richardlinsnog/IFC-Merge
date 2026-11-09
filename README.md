@@ -1,0 +1,85 @@
+# IFC Merger
+
+Aplicativo desktop simples para unificar (merge) múltiplos arquivos IFC em um
+único arquivo IFC, substituindo o fluxo manual feito no BlenderBIM por um
+executável de clique único.
+
+## Funcionalidades
+
+- Selecionar múltiplos modelos IFC (`.ifc`, `.ifczip`, `.ifcxml`), preservando
+  a ordem de seleção (o primeiro arquivo é o modelo base).
+- Escolher a pasta de exportação.
+- Unificar os modelos em um único `merged.ifc` via `ifcpatch` (recipe
+  `MergeProjects`), que converte automaticamente as unidades de comprimento dos
+  modelos adicionais para a unidade do modelo base.
+
+## Requisitos
+
+- Python 3.10 ou superior
+- `ifcopenshell`
+- `ifcpatch` (recipe `MergeProjects` — nas versões atuais é um pacote PyPI
+  separado, não vem embutido no `ifcopenshell`)
+
+## Instalação (Windows)
+
+1. Instale o Python 3.10+ em <https://www.python.org/downloads/> (marque a opção
+   *"Add Python to PATH"* durante a instalação).
+2. Abra o terminal (PowerShell ou CMD) na pasta do projeto:
+
+   ```powershell
+   cd caminho\para\ifc-merger
+   ```
+
+3. Crie e ative um ambiente virtual (opcional, mas recomendado):
+
+   ```powershell
+   python -m venv venv
+   .\venv\Scripts\activate
+   ```
+
+4. Instale as dependências:
+
+   ```powershell
+   pip install -r requirements.txt
+   ```
+
+## Execução
+
+```powershell
+python app.py
+```
+
+## Uso
+
+1. Clique em **"Select models"** e selecione dois ou mais arquivos IFC.
+2. Clique em **"Export path"** e escolha a pasta onde o resultado será salvo.
+3. Clique em **"Merge IFC files"**.
+4. O resultado será salvo como `merged.ifc` na pasta escolhida.
+
+## Gerar o executável (.exe)
+
+Instale o PyInstaller (usado apenas para build, não é dependência de runtime):
+
+```powershell
+pip install pyinstaller
+```
+
+Gere o executável:
+
+```powershell
+pyinstaller --onefile --windowed --name "IFC Merger" app.py
+```
+
+O executável será gerado na pasta `dist\IFC Merger.exe`.
+
+> **Atenção:** o executável final fica grande (centenas de MB), pois o
+> `ifcopenshell` é uma biblioteca compilada que é embutida no `.exe`.
+
+## Estrutura do projeto
+
+```
+ifc-merger/
+├── app.py             # código principal (GUI + lógica de merge)
+├── requirements.txt   # dependências
+└── README.md          # instruções de instalação, execução e build
+```
