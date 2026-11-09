@@ -21,7 +21,7 @@ jobs:
           pip install -r requirements.txt pyinstaller
 
       - name: Build executable
-        run: pyinstaller --onefile --windowed --name "IFC Merger" app.py
+        run: pyinstaller --onefile --windowed --name "IFC Merger" --collect-all ifcpatch --collect-all ifcopenshell app.py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
