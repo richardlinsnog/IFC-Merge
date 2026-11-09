@@ -8,7 +8,12 @@ executável de clique único.
 
 - Selecionar múltiplos modelos IFC (`.ifc`, `.ifczip`, `.ifcxml`), preservando
   a ordem de seleção (o primeiro arquivo é o modelo base).
-- Escolher a pasta de exportação.
+- Adicionar modelos de **pastas diferentes** (cada seleção acumula na lista) e
+  remover modelos da lista com o botão "✕".
+- Escolher a pasta de exportação (exibida em uma caixa de texto para
+  confirmação).
+- Acompanhar o progresso do merge em um **log de status** (com opção de
+  cancelar entre as etapas).
 - Unificar os modelos em um único `merged.ifc` via `ifcpatch` (recipe
   `MergeProjects`), que converte automaticamente as unidades de comprimento dos
   modelos adicionais para a unidade do modelo base.
@@ -54,9 +59,11 @@ python app.py
 
 ## Uso
 
-1. Clique em **"Select models"** e selecione dois ou mais arquivos IFC.
+1. Clique em **"Select models"** e selecione os arquivos IFC. Repita para
+   adicionar modelos de outras pastas; use o "✕" para remover um modelo da lista.
 2. Clique em **"Export path"** e escolha a pasta onde o resultado será salvo.
-3. Clique em **"Merge IFC files"**.
+3. Clique em **"Merge IFC files"** e acompanhe o progresso no log (pode
+   cancelar com **"Cancelar"**).
 4. O resultado será salvo como `merged.ifc` na pasta escolhida.
 
 ## Gerar o executável (.exe)
@@ -70,12 +77,12 @@ pip install pyinstaller
 Gere o executável:
 
 ```powershell
-pyinstaller --onefile --windowed --name "IFC Merger" app.py
+pyinstaller --onefile --windowed --name "IFC Merger" --collect-all ifcpatch --collect-all ifcopenshell app.py
 ```
 
 O executável será gerado na pasta `dist\IFC Merger.exe`.
 
-> **Atenção:** o executável final fica grande (centenas de MB), pois o
+> **Atenção:** o executável final fica grande (dezenas de MB), pois o
 > `ifcopenshell` é uma biblioteca compilada que é embutida no `.exe`.
 
 ## Estrutura do projeto
