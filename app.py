@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 
 import ifcopenshell
-import ifcpatch
+from ifcpatch.recipes import MergeProjects
 
 
 class IFCMergerApp:
@@ -85,12 +85,11 @@ class IFCMergerApp:
 
         try:
             first = ifcopenshell.open(self.files[0])
-            merged = ifcpatch.execute({
-                "input": self.files[0],
-                "file": first,
-                "recipe": "MergeProjects",
-                "arguments": self.files[1:],
-            })
+            # Chamamos o Patcher diretamente: ifcpatch.execute desempacota
+            # "arguments" de forma quebrada para MergeProjects com 3+ arquivos.
+            patcher = MergeProjects.Patcher(file=first, filepaths=self.files[1:])
+            patcher.patch()
+            merged = patcher.get_output()
             merged.write(out_path)
         except Exception as exc:  # noqa: BLE001 — mensagem é exibida ao usuário
             messagebox.showerror("Erro", f"Falha ao executar o merge:\n{exc}")
