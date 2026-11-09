@@ -5,7 +5,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 
 import ifcopenshell
-from ifcpatch.recipes import MergeProjects
+from ifcpatch.recipes import MergeProjects, Migrate
 
 
 class IFCMergerApp:
@@ -84,10 +84,28 @@ class IFCMergerApp:
         out_path = os.path.join(self.export_dir, "merged.ifc")
 
         try:
-            first = ifcopenshell.open(self.files[0])
+            base = ifcopenshell.open(self.files[0])
+            target_schema = base.schema
+
+            # Converte os demais modelos para o schema do modelo base, pois
+            # o merge não aceita misturar schemas (ex.: IFC2X3 + IFC4).
+            others = []
+            for path in self.files[1:]:
+                try:
+                    model = ifcopenshell.open(path)
+                    if model.schema != target_schema:
+                        migrator = Migrate.Patcher(file=model, schema=target_schema)
+                        migrator.patch()
+                        model = migrator.get_output()
+                    others.append(model)
+                except Exception as exc:
+                    raise RuntimeError(
+                        f"Falha ao preparar {os.path.basename(path)}: {exc}"
+                    ) from exc
+
             # Chamamos o Patcher diretamente: ifcpatch.execute desempacota
             # "arguments" de forma quebrada para MergeProjects com 3+ arquivos.
-            patcher = MergeProjects.Patcher(file=first, filepaths=self.files[1:])
+            patcher = MergeProjects.Patcher(file=base, filepaths=others)
             patcher.patch()
             merged = patcher.get_output()
             merged.write(out_path)

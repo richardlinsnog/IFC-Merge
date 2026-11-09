@@ -12,6 +12,8 @@ executável de clique único.
 - Unificar os modelos em um único `merged.ifc` via `ifcpatch` (recipe
   `MergeProjects`), que converte automaticamente as unidades de comprimento dos
   modelos adicionais para a unidade do modelo base.
+- Converter automaticamente modelos com **schema diferente** (ex.: `IFC2X3` +
+  `IFC4`) para o schema do modelo base antes de mesclar (recipe `Migrate`).
 
 ## Requisitos
 
